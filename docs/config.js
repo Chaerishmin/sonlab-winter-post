@@ -2,5 +2,5 @@
 // 클라이언트 보안 비밀번호, Google 이메일, 그룹 주소는 여기에 넣지 않는다.
 window.TREE_CONFIG = Object.freeze({
   googleClientId: "666203743374-dt4sjkuaa3fsvvub919kdst9e3776rud.apps.googleusercontent.com",
-  apiUrl: ""
+  apiUrl: "https://script.google.com/macros/s/AKfycbzcTsBsABdmI7ipHXaqQ_S0atiQ_xhtQ9nziAPEF54UosKdAeD8xSZjUeNz_oEuKr4sXA/exec"
 });
