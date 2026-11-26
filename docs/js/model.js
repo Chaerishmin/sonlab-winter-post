@@ -40,7 +40,7 @@ function sketchLinks(atoms){
   return links;
 }
 const bulbPalette={
-  H:["#fffef3","#f2e0a8","#a18851"],C:["#fff9ff","#e3ccff","#9573ad"],
+  H:["#fffef3","#f2e0a8","#a18851"],C:["#deedb5","#60957b","#234f45"],
   O:["#ffdda6","#cf5d48","#82332f"],N:["#e1f1fc","#6e94b5","#3d557e"],
   S:["#fff5c0","#ecc15e","#9c742b"],Fe:["#ffe3ac","#d78b54","#82462f"],
   Cl:["#e8f0ad","#94b05f","#567448"],F:["#edffd2","#9fc99d","#5c885e"],
