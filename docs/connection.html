@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>공동 트리 연결 확인 · Son Lab 겨울 우체국</title>
+<link rel="stylesheet" href="./style.css">
+<style>main{width:min(580px,calc(100% - 32px));margin:8vh auto}h1{font:600 1.7rem var(--serif);color:var(--pine)}li{margin:.8rem 0}p{margin:12px 0}a{color:var(--pine)}</style>
+</head><body><div class="postal-edge"></div>
+<main><h1>공동 트리 연결 확인</h1>
+<p>현재 페이지에서 Google 웹 앱의 응답을 읽을 수 있는지 확인해. 트리 기록은 조회만 해.</p>
+<button id="run" class="primary-btn">연결 확인</button>
+<ul id="checks" aria-live="polite"></ul><p><a href="./">트리로 돌아가기</a></p></main>
+<script src="./config.js"></script><script src="./js/remote.js"></script>
+<script>
+const client=new TreeClient(window.TREE_CONFIG), button=document.getElementById("run"), out=document.getElementById("checks");
+button.onclick=async()=>{
+  button.disabled=true;out.replaceChildren();
+  for(const [label,op,post] of [["공개 GET","ping",false],["인증 정보 없는 POST","ping",true],["공동 트리 읽기","tree",false]]){
+    const item=document.createElement("li");item.textContent=label+" · 확인 중";out.append(item);
+    try{
+      const data=await client.call(op,{},{post});
+      if(op==="ping"?data.service!=="sonlab-winter-post":!Array.isArray(data.ornaments))throw Error("응답 형식을 확인해줘.");
+      item.textContent=label+" · 성공";
+    }catch(e){item.textContent=label+" · "+e.message;}
+  }
+  button.disabled=false;
+};
+</script></body></html>
