@@ -1,0 +1,41 @@
+.glitter-tools {
+  margin: 15px 0 0;
+  padding: 13px 0 0;
+  border: 0;
+  border-top: 1px dashed var(--line);
+  min-width: 0;
+}
+.glitter-row, .glitter-colors, .glitter-toggle {
+  display: flex;
+  align-items: center;
+}
+.glitter-row { justify-content: space-between; flex-wrap: wrap; gap: 5px 8px; }
+.glitter-toggle {
+  gap: 5px; min-height: 32px; padding: 3px 9px;
+  color: var(--pine); font: 650 .83rem/1.25 var(--sans);
+}
+.glitter-toggle .glitter-glyph { color: #ad783c; font: 1.05rem Georgia,serif; }
+.glitter-toggle[aria-pressed=true] { color: #fffaf1; background: var(--pine); border-color: var(--pine); }
+.glitter-toggle[aria-pressed=true] .glitter-glyph { color: #ffe3ab; }
+.glitter-colors { gap: 0; min-width: 0; }
+.glitter-color {
+  display: grid; place-items: center; position: relative; cursor: pointer;
+  width: 24px; height: 30px; padding: 0;
+}
+.glitter-color input {
+  position: absolute; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer;
+}
+.glitter-color span {
+  display: block; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid #5e493a60; background: var(--glitter-color); pointer-events: none;
+}
+.glitter-color input:checked + span { outline: 1.5px solid var(--pine); outline-offset: 2px; }
+.glitter-color input:focus-visible + span { outline: 3px solid #ad602d; outline-offset: 2px; }
+.glitter-hint { margin: 4px 0 0; font-size: .76rem; color: var(--muted); line-height: 1.45; }
+.glitter-layer { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
+html.glitter-mode, html.glitter-mode body { touch-action: pinch-zoom; }
+html.glitter-mode body { cursor: crosshair; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+@media (max-width: 790px), (max-aspect-ratio: 1/1) {
+  .glitter-tools { margin-top: 8px; padding-top: 6px; }
+  .glitter-row { justify-content: flex-start; gap: 3px 12px; }
+}
