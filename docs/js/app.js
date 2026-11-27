@@ -266,19 +266,59 @@ function ornamentWidth(o){
   if(o.kind==="mol"&&o.mode==="chain")return 15+o.repeats*3.25;
   return o.kind==="mol"?13:o.kind==="card"?10:9.3;
 }
-function decoratePin(b,o,count){
-  b.replaceChildren(pic(o.art));
+
+// The PNGs are already rotated. The percentages locate each painted attachment point.
+const replyDecorations = [
+  {file:"velvet-bow",   width:26, x:38.4176, y:33.3434},
+  {file:"ivory-bow",    width:29, x:38.1905, y:33.3908},
+  {file:"brass-bell",   width:19, x:10.2707, y:3.5736},
+  {file:"candy-cane",   width:16, x:43.4881, y:1.8680},
+  {file:"wrapped-gift", width:18, x:13.6827, y:13.5740},
+  {file:"glass-drop",   width:16, x:35.5885, y:3.3793}
+];
+function decorationForReply(id) {
+  // FNV-1a maps a saved reply ID to the same design on every visit and device.
+  let hash = 2166136261;
+  for (let i = 0; i < id.length; i++) hash = Math.imul(hash ^ id.charCodeAt(i), 16777619);
+  return replyDecorations[(hash >>> 0) % replyDecorations.length];
+}
+function addReplyDecorations(face, replies) {
+  const layer = node("span","reply-decorations");
+  layer.setAttribute("aria-hidden","true");
+  replies.forEach((reply, index) => {
+    const shape = decorationForReply(reply.id);
+    const base = "./assets/reply-ornaments/" + shape.file;
+    const marker = pic();
+    marker.className = "reply-decoration";
+    marker.width = shape.width;
+    marker.height = 20;
+    marker.srcset = base + ".png 1x, " + base + "@4x.png 4x";
+    marker.src = base + ".png";
+    marker.style.transform = "translate(-" + shape.x + "%, -" + shape.y + "%)";
+    if (index > 0) {
+      // Keep every reply on the right edge, even when several share a small ornament.
+      const share = 48 * index / (replies.length - 1);
+      marker.style.setProperty("--reply-offset", "min(" + index * 20 + "px, " + share + "%)");
+    }
+    layer.append(marker);
+  });
+  face.append(layer);
+}
+function decoratePin(b,o,replies=[]){
+  const face=node("span","pin-art");
+  face.append(pic(o.art));
+  if(replies.length)addReplyDecorations(face,replies);
+  b.replaceChildren(face);
   if(o.kind==="mol"){const label=node("span","nameplate",o.title);b.append(label)}
-  if(count){const tag=node("span","ribbon-mark","✉ "+count);tag.setAttribute("aria-hidden","true");b.append(tag)}
   b.style.width="calc(var(--ornament-reference, 800px) * "+(ornamentWidth(o)*.8/100)+")";b.style.left=(o.x*100)+"%";b.style.top=(o.y*100)+"%";
 }
 function renderTree(){
   const d=document.createDocumentFragment();
   for(const o of board.ornaments){
     if(draft?.moving&&draft.record.id===o.id)continue;
-    const count=repliesFor(o.id).length,b=node("button","pin");b.type="button";
-    const desc=getTitle(o)+" · "+o.author+" · 답장 "+count+"개";
-    b.dataset.id=o.id;b.setAttribute("aria-label",desc);b.title=desc;decoratePin(b,o,count);
+    const replies=repliesFor(o.id),b=node("button","pin");b.type="button";
+    const desc=getTitle(o)+" · "+o.author+" · 답장 "+replies.length+"개";
+    b.dataset.id=o.id;b.setAttribute("aria-label",desc);b.title=desc;decoratePin(b,o,replies);
     b.onclick=()=>openDetail(o.id);d.append(b);
   }
   $("ornaments").replaceChildren(d);$("orn-count").textContent=board.ornaments.length;$("reply-count").textContent=board.replies.length;
@@ -508,7 +548,7 @@ $("help-open").onclick=()=>{
     "작업대에서 장식을 고르면 우체국 작성 명단에 등록한 Google 계정으로 로그인하고 표시할 이름을 적어. 메시지를 쓰거나 사진 또는 원자 좌표를 넣을 수 있어.",
     "‘걸 위치 고르기’를 누르고 가지를 클릭하거나, 장식을 원하는 가지로 끌어다 놓아. 휴대폰에서는 가지를 톡 누르면 돼.",
     "키보드는 방향키로 위치를 고르고 Enter로 걸어줘. Esc로 취소할 수 있어.",
-    "‘답장 태그 보기’에서 가지 옆의 작은 봉투를 켜고 끌 수 있어. 장식을 열면 답장 전체를 읽을 수 있어.",
+    "‘답장 태그 보기’로 답장마다 달린 리본과 오나먼트를 켜고 끌 수 있어. 장식을 누르면 답장을 모두 읽을 수 있어.",
     "작성할 때 썼던 Google 계정으로 장식이나 답장을 열면 삭제 버튼이 보여. 장식을 내리면 그곳의 답장은 장식 목록에 모아둬.",
     "꼭대기의 별을 누르면 교수님의 한마디가 열려."
   ].forEach(t=>ol.append(node("li","",t)));content.append(ol,node("p","help-text","트리에 게시한 글과 완성된 이미지는 링크를 가진 누구나 볼 수 있어. 사진 원본과 분자 좌표는 기기에 남아."));
@@ -542,7 +582,7 @@ function onBranch(p){return p.y>=.065&&p.y<=.785&&Math.abs(p.x-.5)<=branchHalf(p
 function updateGhost(){
   if(!draft)return;
   const g=$("ghost");
-  if(!g.firstElementChild)decoratePin(g,{...draft.record,...draft.point},0);
+  if(!g.firstElementChild)decoratePin(g,{...draft.record,...draft.point});
   else {g.style.left=(draft.point.x*100)+"%";g.style.top=(draft.point.y*100)+"%"}
 
 }
