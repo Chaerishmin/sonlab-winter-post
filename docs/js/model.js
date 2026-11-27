@@ -51,7 +51,7 @@ function glowAtom(ctx,x,y,r,s){
   const colors=bulbPalette[s]||["#fae5ba","#b79a69","#796546"];
   const carbon=s==="C",halo=r*(carbon?1.72:1.49);
   const aura=ctx.createRadialGradient(x,y,r*.7,x,y,halo);
-  const glow=carbon?"237,211,255":"255,225,142";
+  const glow = "255,225,142";
   aura.addColorStop(0,"rgba("+glow+","+(carbon ? .78 : .5)+")");aura.addColorStop(1,"rgba("+glow+",0)");
   ellipse(ctx,x,y,halo,halo,aura);
   const g=ctx.createRadialGradient(x-r*.36,y-r*.41,r*.05,x+r*.06,y+r*.05,r*1.07);
