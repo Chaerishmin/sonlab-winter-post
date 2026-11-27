@@ -1,0 +1,93 @@
+diff --git a/docs/js/app.js b/docs/js/app.js
+--- a/docs/js/app.js
++++ b/docs/js/app.js
+@@ -268,6 +268,46 @@
+ }
+-function decoratePin(b,o,count){
+-  b.replaceChildren(pic(o.art));
++
++// The PNGs are already rotated. The percentages locate each painted attachment point.
++const replyDecorations = [
++  {file:"velvet-bow",   width:26, x:38.4176, y:33.3434},
++  {file:"ivory-bow",    width:29, x:38.1905, y:33.3908},
++  {file:"brass-bell",   width:19, x:10.2707, y:3.5736},
++  {file:"candy-cane",   width:16, x:43.4881, y:1.8680},
++  {file:"wrapped-gift", width:18, x:13.6827, y:13.5740},
++  {file:"glass-drop",   width:16, x:35.5885, y:3.3793}
++];
++function decorationForReply(id) {
++  // FNV-1a maps a saved reply ID to the same design on every visit and device.
++  let hash = 2166136261;
++  for (let i = 0; i < id.length; i++) hash = Math.imul(hash ^ id.charCodeAt(i), 16777619);
++  return replyDecorations[(hash >>> 0) % replyDecorations.length];
++}
++function addReplyDecorations(face, replies) {
++  const layer = node("span","reply-decorations");
++  layer.setAttribute("aria-hidden","true");
++  replies.forEach((reply, index) => {
++    const shape = decorationForReply(reply.id);
++    const base = "./assets/reply-ornaments/" + shape.file;
++    const marker = pic();
++    marker.className = "reply-decoration";
++    marker.width = shape.width;
++    marker.height = 20;
++    marker.srcset = base + ".png 1x, " + base + "@4x.png 4x";
++    marker.src = base + ".png";
++    marker.style.transform = "translate(-" + shape.x + "%, -" + shape.y + "%)";
++    if (index > 0) {
++      // Keep every reply on the right edge, even when several share a small ornament.
++      const share = 48 * index / (replies.length - 1);
++      marker.style.setProperty("--reply-offset", "min(" + index * 20 + "px, " + share + "%)");
++    }
++    layer.append(marker);
++  });
++  face.append(layer);
++}
++function decoratePin(b,o,replies=[]){
++  const face=node("span","pin-art");
++  face.append(pic(o.art));
++  if(replies.length)addReplyDecorations(face,replies);
++  b.replaceChildren(face);
+   if(o.kind==="mol"){const label=node("span","nameplate",o.title);b.append(label)}
+-  if(count){const tag=node("span","ribbon-mark","✉ "+count);tag.setAttribute("aria-hidden","true");b.append(tag)}
+   b.style.width="calc(var(--ornament-reference, 800px) * "+(ornamentWidth(o)*.8/100)+")";b.style.left=(o.x*100)+"%";b.style.top=(o.y*100)+"%";
+@@ -278,5 +318,5 @@
+     if(draft?.moving&&draft.record.id===o.id)continue;
+-    const count=repliesFor(o.id).length,b=node("button","pin");b.type="button";
+-    const desc=getTitle(o)+" · "+o.author+" · 답장 "+count+"개";
+-    b.dataset.id=o.id;b.setAttribute("aria-label",desc);b.title=desc;decoratePin(b,o,count);
++    const replies=repliesFor(o.id),b=node("button","pin");b.type="button";
++    const desc=getTitle(o)+" · "+o.author+" · 답장 "+replies.length+"개";
++    b.dataset.id=o.id;b.setAttribute("aria-label",desc);b.title=desc;decoratePin(b,o,replies);
+     b.onclick=()=>openDetail(o.id);d.append(b);
+@@ -510,3 +550,3 @@
+     "키보드는 방향키로 위치를 고르고 Enter로 걸어줘. Esc로 취소할 수 있어.",
+-    "‘답장 태그 보기’에서 가지 옆의 작은 봉투를 켜고 끌 수 있어. 장식을 열면 답장 전체를 읽을 수 있어.",
++    "‘답장 태그 보기’로 답장마다 달린 리본과 오나먼트를 켜고 끌 수 있어. 장식을 누르면 답장을 모두 읽을 수 있어.",
+     "작성할 때 썼던 Google 계정으로 장식이나 답장을 열면 삭제 버튼이 보여. 장식을 내리면 그곳의 답장은 장식 목록에 모아둬.",
+@@ -544,3 +584,3 @@
+   const g=$("ghost");
+-  if(!g.firstElementChild)decoratePin(g,{...draft.record,...draft.point},0);
++  if(!g.firstElementChild)decoratePin(g,{...draft.record,...draft.point});
+   else {g.style.left=(draft.point.x*100)+"%";g.style.top=(draft.point.y*100)+"%"}
+diff --git a/docs/style.css b/docs/style.css
+--- a/docs/style.css
++++ b/docs/style.css
+@@ -64,5 +64,14 @@
+ .nameplate {max-width:135%;width:max-content;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #9b702c;background:#f8df9f;color:#4b2d12;border-radius:2px;padding:2px 4px;font:700 clamp(8px,calc(var(--ornament-reference,800px) * .0124),10.4px)/1.1 var(--sans);margin-top:-2px;pointer-events:none}
+-.ribbon-mark {position:absolute;right:-19%;top:40%;transform:rotate(10deg);height:16px;min-width:19px;padding:2px 4px;border:1px solid #a15b4b;color:#87362d;background:#fff0d1;box-shadow:0 1px 2px #48251c50;border-radius:2px;font:700 10px/1 var(--sans);display:grid;place-items:center}
+-.ribbon-mark::before {content:"";position:absolute;width:12px;height:9px;border-top:2px solid #a43d32;left:-10px;top:0;transform:rotate(27deg)}
+-.tags-hidden .ribbon-mark {display:none}
++.pin-art {position:relative;display:block;width:100%;line-height:0}
++.reply-decorations {position:absolute;inset:0;pointer-events:none}
++.pin img.reply-decoration {
++  position:absolute;
++  left:87%;
++  top:calc(38% + var(--reply-offset, 0px));
++  width:auto;
++  height:20px;
++  max-width:none;
++}
++.viewport:not(.placing) #ornaments .reply-decoration {pointer-events:auto}
++.tags-hidden .reply-decorations {display:none}
+ .viewport.placing {cursor:crosshair;touch-action:none;box-shadow:inset 0 0 0 2px #fff3c7}
