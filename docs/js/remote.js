@@ -129,7 +129,7 @@ function loginDialog() {
   buttons.innerHTML = `
     <form class="form-grid" autocomplete="off">
       <label class="field">
-        <span>Google 로그인 이메일</span>
+        <span>서울대 이메일(@snu.ac.kr)을 입력해줘.</span>
         <input type="email" required autocomplete="off" autocapitalize="none" spellcheck="false"
           style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit">
       </label>
